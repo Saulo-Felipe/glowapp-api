@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SigninModule } from './modules/auth/sign-in/sign-in.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [SigninModule],
+  imports: [AuthModule, ConfigModule.forRoot()],
   controllers: [AppController],
   providers: [AppService],
 })
