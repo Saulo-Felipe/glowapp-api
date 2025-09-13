@@ -8,6 +8,7 @@ export const SignUpSchema = z
     confirmPassword: z
       .string()
       .min(6, 'Confirmar senha deve ter pelo menos 6 caracteres'),
+    otp: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ['confirmPassword'],

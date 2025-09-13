@@ -9,16 +9,17 @@ datasource db {
 }
 
 model Company {
-  id        Int      @default(autoincrement()) @id
-  name      String?
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  name             String?
+  email            String   @unique
+  password         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  registrationStep Int // 1=company info, 2=categories
 }
 
 model EmailOTPSession {
-  id        Int      @default(autoincrement()) @id
+  id        Int      @id @default(autoincrement())
   email     String
   otp       String
   createdAt DateTime @default(now())

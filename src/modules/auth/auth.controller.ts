@@ -1,12 +1,9 @@
 import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { ZodValidationPipe } from '../../zod-validation.pipe';
 import { AuthService } from './auth.service';
+import { SendOtpCodeSchema, type SendOtpCodeDTO } from './schemas/send-otpcode';
 import { SignInSchema, type SignInDto } from './schemas/sign-in.schema';
 import { SignUpSchema, type SignUpDTO } from './schemas/sign-up.schema';
-import {
-  VerifyOtpCodeSchema,
-  type VerifyOtpCodeDTO,
-} from './schemas/verify-otpcode';
 
 @Controller('auth')
 export class AuthController {
@@ -24,9 +21,9 @@ export class AuthController {
     return await this.authService.signUp(body);
   }
 
-  @Post('sign-up/verify-otp')
-  @UsePipes(new ZodValidationPipe(VerifyOtpCodeSchema))
-  async verifyOtp(@Body() body: VerifyOtpCodeDTO) {
-    return await this.authService.verifyOtp(body);
+  @Post('sign-up/send-otp')
+  @UsePipes(new ZodValidationPipe(SendOtpCodeSchema))
+  async sendOtpCode(@Body() body: SendOtpCodeDTO) {
+    return await this.authService.sendOtpCode(body);
   }
 }
