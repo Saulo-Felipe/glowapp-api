@@ -1,5 +1,14 @@
-import { Body, Controller, Post, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+  UsePipes,
+} from '@nestjs/common';
 import { ZodValidationPipe } from '../../zod-validation.pipe';
+import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { SendOtpCodeSchema, type SendOtpCodeDTO } from './schemas/send-otpcode';
 import { SignInSchema, type SignInDto } from './schemas/sign-in.schema';
@@ -25,5 +34,12 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(SendOtpCodeSchema))
   async sendOtpCode(@Body() body: SendOtpCodeDTO) {
     return await this.authService.sendOtpCode(body);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('test')
+  teste(@Request() req: Request) {
+    console.log(req['user']);
+    return;
   }
 }

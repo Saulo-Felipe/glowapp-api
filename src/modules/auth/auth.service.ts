@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import argon2 from 'argon2';
 import { DefaultControllerResponse } from 'src/@types/default-controller-response';
 import { PrismaService } from 'src/prisma.service';
@@ -10,7 +11,10 @@ const OTP_EXPIRATION_TIME = 1000 * 60 * 1; // 1 minute
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async signIn(body: SignInDto): Promise<DefaultControllerResponse> {
     try {
@@ -20,25 +24,45 @@ export class AuthService {
         },
       });
 
-      if (!company || company.password !== body.password) {
-        throw new UnauthorizedException({
-          warning: true,
-          message: 'Credenciais inválidas',
-        });
+      if (company) {
+        const verifyPassword = await argon2.verify(
+          company.password,
+          body.password,
+        );
+
+        if (verifyPassword) {
+          const token = await this.jwtService.signAsync({
+            sub: company.id,
+            email: company.email,
+          });
+
+          return {
+            success: true,
+            message: 'Usuário autenticado com sucesso!',
+            data: {
+              token,
+              registrationStep: company.registrationStep,
+            },
+          };
+        }
       }
 
-      return { success: true, message: 'Login realizado com sucesso' };
-    } catch {
       return {
+        warning: true,
+        message: 'Credenciais inválidas',
+      };
+    } catch (err) {
+      console.log(err);
+      return new InternalServerErrorException({
         error: true,
         message: 'Ocorreu um erro desconhecido ao fazer login',
-      };
+      });
     }
   }
 
   async signUp(body: SignUpDTO): Promise<DefaultControllerResponse> {
     try {
-      const verifyOTPFeedback = await this.verifyOtp({
+      const verifyOTPFeedback = await this._verifyOtp({
         email: body.email,
         otp: body.otp,
       });
@@ -77,7 +101,7 @@ export class AuthService {
     }
   }
 
-  async verifyOtp(params: {
+  private async _verifyOtp(params: {
     email: string;
     otp: string;
   }): Promise<DefaultControllerResponse> {
